@@ -1,0 +1,1 @@
+BlockTxBroadcastResult(height=5032913, txhash='2555F550AA8869DB3DA49DFC4BF1312FB1BAEC4E36512CC6ABADC571516350FC', raw_log='failed to execute message; message index: 0: uosmo token is lesser than min amount: calculated amount is lesser than min amount', gas_wanted=400000, gas_used=184615, logs=None, code=7, codespace='gamm', info=None, data=None, timestamp=None)

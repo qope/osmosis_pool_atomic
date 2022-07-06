@@ -102,15 +102,19 @@ class MsgSwapExactAmountIn(Msg):
         proto.token_out_min_amount = self.token_out_min_amount
         return proto
 
-def send_tx(trade, tx_fee):
-    mk = MnemonicKey(mnemonic=os.getenv("MNEMONIC"))
-    terra = LCDClient("https://lcd-osmosis.blockapsis.com", "osmosis-1")
-    address = os.getenv("OSADDRESS")
-    wallet = terra.wallet(mk)
+
+lcd = "https://lcd-osmosis.blockapsis.com"
+lcd = "https://osmosis.stakesystems.io"
+mk = MnemonicKey(mnemonic=os.getenv("MNEMONIC"))
+terra = LCDClient(lcd, "osmosis-1")
+address = os.getenv("OSADDRESS")
+wallet = terra.wallet(mk)
+
+def send_tx(trade, tx_fee, token_out_min_amount):
     msgswap = MsgSwapExactAmountIn(sender=address, \
     routes = trade["routes"],\
         token_in = Coin.from_str(str(trade["token_in_amount"])+trade["token_in_denom"] ), \
-        token_out_min_amount=str(trade["token_in_amount"]))
+        token_out_min_amount=str(token_out_min_amount))
 
     tx = wallet.create_and_sign_tx(CreateTxOptions(
         msgs=[msgswap],

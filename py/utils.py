@@ -3,6 +3,7 @@ import subprocess
 import json, time
 
 lcd = "https://lcd-osmosis.blockapsis.com"
+lcd = "https://osmosis.stakesystems.io"
 
 def get_pool_str():
     Pools = []
@@ -11,7 +12,7 @@ def get_pool_str():
         pools = requests.get(lcd + "/osmosis/gamm/v1beta1/pools"+"?pagination.key="+pagination).json()
         Pools.extend(pools["pools"])
         pagination = pools["pagination"]["next_key"]
-        time.sleep(0.1)
+        # time.sleep(0.1)
 
     Pools_formatted = []
     for pool in Pools:

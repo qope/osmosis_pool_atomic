@@ -32,7 +32,6 @@ fn main() {
     let paths = find_loops(&graph, &denom, &max_hop);
     let selected_paths = select_paths_maybe_profitable(&pools, &paths, &denom, &min_amount);
     let (path, amount, profit) = find_best_path_and_amount(&pools, &selected_paths, &denom, &min_amount, &max_amount, &iter);
-    // println!("Num of selected_paths = {}", selected_paths.len());
     // println!("path = {:?}, amount = {}, profit = {}", path, amount, profit);
     let msg = serialize(&path, &amount, &profit, &denom);
     print!("{}", msg);
@@ -43,7 +42,9 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use std::collections::HashMap;
-
+    use std::time::Instant;
+    use std::fs::{File, remove_file};
+    use std::io::prelude::*;
     use super::*;
 
     #[test]
@@ -118,5 +119,50 @@ mod tests {
         let graph = get_graph(&pools);
         let paths = find_loops(&graph, &denom, &max_hop);
         find_best_amount(&pools, &paths[0], &denom, &min_amount, &max_amount, &iter);
+    }
+
+    #[test]
+    fn test_io() -> Result<(), Box<dyn std::error::Error>> {
+        let s = "Hello dfad".to_string();
+        let mut file = File::create("foo.txt")?;
+        file.write_all(s.as_bytes())?;
+        let mut file = File::open("foo.txt")?;
+        let mut contents = String::new();
+        file.read_to_string(&mut contents)?;
+        assert_eq!(contents, s);
+        remove_file("foo.txt")?;
+        Ok(())
+    }
+
+    #[test]
+    fn test_save_and_load_paths() {
+        let now = Instant::now();
+        let denom = "uosmo".to_string();
+        let max_hop = 2;
+        let pools = get_pools_from_file().unwrap();
+        let graph = get_graph(&pools);
+        let paths = find_loops(&graph, &denom, &max_hop);
+        let after_find_paths = now.elapsed().as_millis(); 
+        save_paths(&paths).unwrap();
+        let after_save_paths = now.elapsed().as_millis(); 
+        let paths2 = load_paths().unwrap();
+        let after_load_paths = now.elapsed().as_millis(); 
+        assert_eq!(paths, paths2);
+        println!("make:{} msec, save:{} msec, load: {} msec", 
+        after_find_paths, 
+        after_save_paths - after_find_paths,
+        after_load_paths - after_save_paths);
+    }
+
+    #[test]
+    fn test_select_paths_sufficient_capacity() {
+        let denom = "uosmo".to_string();
+        let max_hop = 4;
+        let test_amount = 10.0f64.powi(6);
+        let pools = get_pools_from_file().unwrap();
+        let graph = get_graph(&pools);
+        let paths = find_loops(&graph, &denom, &max_hop);
+        let selected_paths = select_paths_sufficient_capacity(&pools, &paths, &denom, &test_amount);
+        println!("Num of selected_paths = {}", selected_paths.len());
     }
 }

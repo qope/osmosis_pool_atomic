@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use crate::utils::*;
 
 #[derive(Deserialize, Debug, Clone)]
@@ -19,7 +19,7 @@ pub struct Edge{
     pool_id: u32
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Path{
     pub path_denoms: Vec<String>,
     pub path_pools: Vec<u32>,
@@ -73,6 +73,17 @@ pub fn select_paths_maybe_profitable(pools:&HashMap<u32, Pool>, paths:&Vec<Path>
     for path in paths{
         let amount_out = multiple_swap_output(&pools, path, denom, &min_amount);
         if amount_out - min_amount > 0.0{
+            selected_paths.push(path.clone());
+        }
+    }
+    return selected_paths;
+}
+
+pub fn select_paths_sufficient_capacity(pools:&HashMap<u32, Pool>, paths:&Vec<Path>, denom:&String, test_amount:&f64) -> Vec<Path>{
+    let mut selected_paths = vec![];
+    for path in paths{
+        let amount_out = multiple_swap_output(&pools, path, denom, &test_amount);
+        if amount_out  > 0.99*test_amount{
             selected_paths.push(path.clone());
         }
     }

@@ -2,6 +2,9 @@ use crate::core::*;
 use std::error::Error;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::fs::File;
+use std::io::prelude::*;
+
 
 #[derive(Serialize)]
 struct MsgSwap{
@@ -61,6 +64,21 @@ pub fn parse_option(option_str:&String)-> Result<Option, Box<dyn Error>> {
     let option: Option = serde_json::from_str(option_str)?;
     Ok(option)
 }
+
+pub fn save_paths(paths:&Vec<Path>)-> Result<(), Box<dyn Error>>{
+    let serialized = serde_json::to_string(paths)?;
+    let mut file = File::create("paths.json")?;
+    file.write_all(serialized.as_bytes())?;
+    Ok(())
+}
+pub fn load_paths()-> Result<Vec<Path>, Box<dyn Error>>{
+    let mut file = File::open("paths.json")?;
+    let mut data = String::new();
+    file.read_to_string(&mut data)?;
+    let paths: Vec<Path> = serde_json::from_str(&data)?;
+    Ok(paths)
+}
+
 
 pub fn serialize(path:&Path, amount_in:&f64, profit:&f64, denom:&String) -> String{
     let mut routes = vec![];
